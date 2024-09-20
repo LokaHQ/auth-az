@@ -1,3 +1,4 @@
+import resource
 from typing import List
 from fastapi import Body, FastAPI
 import vakt
@@ -13,7 +14,7 @@ vakt_mem_storage.add(
         1,
         actions=[Eq("read")],
         resources=[StartsWith("book/")],
-        # resources=[StartsWith("book/1")],
+        # resources=[Eq("book/1")],
         subjects=[Eq("andrej@loka.com")],
         effect=vakt.ALLOW_ACCESS,
     )
@@ -30,10 +31,16 @@ def can(subject: str, action: str, resource_id: str) -> bool:
 
 @app.post("/filter")
 def filter(subject: str, action: str, resource_ids: List[str] = Body()) -> List[str]:
-    print(subject, action, resource_ids)
+    print("filtering", subject, action, resource_ids)
     filtered_ids = []
     for r_id in resource_ids:
         inquiry = vakt.Inquiry(subject=subject, action=action, resource=r_id)
         if vakt_guard.is_allowed(inquiry):
             filtered_ids.append(r_id)
+    print(
+        "original size of list was",
+        len(resource_ids),
+        "reduced it to",
+        len(filtered_ids),
+    )
     return filtered_ids

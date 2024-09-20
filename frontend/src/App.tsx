@@ -4,7 +4,7 @@ import BooksList from './BooksList';
 const App: Component = () => {
   return (
     <>
-      <h1>Hello world!!!!</h1>
+      <h1>List of books:</h1>
       <BooksList />
     </>
   );
