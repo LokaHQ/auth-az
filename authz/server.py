@@ -1,15 +1,19 @@
-from fastapi import FastAPI
+from typing import List
+from fastapi import Body, FastAPI
 import vakt
-from vakt.rules import Eq
+from vakt.rules import Eq, StartsWith
+
 
 app = FastAPI()
+
 
 vakt_mem_storage = vakt.MemoryStorage()
 vakt_mem_storage.add(
     vakt.Policy(
         1,
         actions=[Eq("read")],
-        resources=[Eq("books")],
+        resources=[StartsWith("book/")],
+        # resources=[StartsWith("book/1")],
         subjects=[Eq("andrej@loka.com")],
         effect=vakt.ALLOW_ACCESS,
     )
@@ -17,11 +21,19 @@ vakt_mem_storage.add(
 vakt_guard = vakt.Guard(vakt_mem_storage, vakt.RulesChecker())
 
 
-@app.get("/")
-def index(action: str, resource: str):
-    subject = "andrej@loka.com"
-    inquiry = vakt.Inquiry(action=action, resource=resource, subject=subject)
-    if vakt_guard.is_allowed(inquiry):
-        return "This action is allowed! :)"
-    else:
-        return "This is forbidden. :("
+@app.get("/can")
+def can(subject: str, action: str, resource_id: str) -> bool:
+    print("authz checking for", subject, action, resource_id)
+    inquiry = vakt.Inquiry(subject=subject, action=action, resource=resource_id)
+    return vakt_guard.is_allowed(inquiry)
+
+
+@app.post("/filter")
+def filter(subject: str, action: str, resource_ids: List[str] = Body()) -> List[str]:
+    print(subject, action, resource_ids)
+    filtered_ids = []
+    for r_id in resource_ids:
+        inquiry = vakt.Inquiry(subject=subject, action=action, resource=r_id)
+        if vakt_guard.is_allowed(inquiry):
+            filtered_ids.append(r_id)
+    return filtered_ids

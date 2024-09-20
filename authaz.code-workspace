@@ -1,0 +1,21 @@
+{
+    "folders": [
+        {
+            "name": "ROOT",
+            "path": "."
+        },
+        {
+            "name": "backend",
+            "path": "./backend"
+        }
+        {
+            "name": "frontend",
+            "path": "./frontend"
+        }
+        {
+            "name": "authz",
+            "path": "./authz"
+        }
+    ],
+    "settings": {}
+}
